@@ -14,21 +14,6 @@ Options Market Fear Signal → ML Layer A (VolSSM: predicted vol)
                           → Multi-Client Dashboard + LLM Narrator
 ```
 
-## Quick Start (3 commands)
-
-```bash
-# 1. Install dependencies
-pip install -r requirements.txt
-
-# 2. Train models (downloads data + trains per-ticker VolSSM + HMM)
-python scripts/train.py --epochs 50   # use 200 for full quality
-
-# 3. Launch dashboard
-python scripts/serve.py
-```
-
-Open `http://localhost:8000` for the dashboard.
-
 ## Repository Structure
 
 ```
