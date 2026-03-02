@@ -1,10 +1,3 @@
-"""
-AdvisorIQ — Feature Engineering for Layer B (HMM Regime Classifier)
-
-Produces the 6-feature macro matrix:
-    [f1_vix, f2_vix_chg_20d, f3_slope, f4_spy_ret_20d, f5_hyg_ret_20d, f6_corr_spy_tlt]
-"""
-
 import logging
 import numpy as np
 import pandas as pd
@@ -15,19 +8,6 @@ logger = logging.getLogger(__name__)
 
 
 def build_hmm_features(macro_prices: pd.DataFrame) -> pd.DataFrame:
-    """
-    Build 6 macro features for the HMM regime classifier.
-
-    Parameters
-    ----------
-    macro_prices : DataFrame with columns including:
-                   '^VIX', '^VIX3M' (optional), 'SPY', 'HYG', 'TLT'
-
-    Returns
-    -------
-    DataFrame with 6 columns matching HMM_FEATURE_COLS, indexed by date.
-    NaN burn-in rows (~20 trading days) are dropped.
-    """
     # Resolve column names (handle yfinance quirks)
     cols = macro_prices.columns.tolist()
 
