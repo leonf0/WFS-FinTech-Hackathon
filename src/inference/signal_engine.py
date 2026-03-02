@@ -1,13 +1,3 @@
-"""
-AdvisorIQ — IVR Signal Engine
-
-Combines Layer A (predicted vol) + Layer B (regime) + live IV into actionable signals.
-
-For each ticker, each day:
-    IVR = ATM_IV / predicted_HV
-    Fear flag depends on regime-specific threshold + IV percentile condition.
-"""
-
 import logging
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
@@ -102,18 +92,6 @@ class SignalEngine:
                     len(self._vol_models), "loaded" if self._hmm else "missing")
 
     def predict_vol(self, ticker: str, features: np.ndarray) -> float:
-        """
-        Predict 30d forward realised vol for a single ticker.
-
-        Parameters
-        ----------
-        ticker   : asset ticker
-        features : (252, 8) numpy array of daily features
-
-        Returns
-        -------
-        Predicted annualised HV as a float.
-        """
         if ticker not in self._vol_models:
             # Fallback: use last known HV from features (hv_21d column, index 3)
             return float(features[-1, 3]) if features.shape[1] > 3 else 0.20
@@ -125,11 +103,6 @@ class SignalEngine:
         return float(pred.cpu().item())
 
     def get_regime(self, hmm_features: pd.DataFrame) -> tuple:
-        """
-        Get current market regime from HMM.
-
-        Returns (regime_label, regime_probs_dict)
-        """
         if self._hmm is None:
             return "NORMAL", {"LOW_VOL": 0.1, "NORMAL": 0.8, "STRESS": 0.1}
 
@@ -146,21 +119,7 @@ class SignalEngine:
         iv_history: Optional[Dict[str, pd.Series]] = None,  # ticker -> historical IV
         as_of_date: str = None,
     ) -> SignalOutput:
-        """
-        Run the full signal pipeline.
 
-        Parameters
-        ----------
-        ticker_features : dict mapping ticker -> (252, 8) feature array
-        current_ivs     : dict mapping ticker -> current ATM IV (annualised decimal)
-        hmm_features    : DataFrame of HMM features (at least last row is "today")
-        iv_history      : optional dict mapping ticker -> Series of historical IVs
-        as_of_date      : date string for the signal
-
-        Returns
-        -------
-        SignalOutput with all ticker signals and alerts.
-        """
         if as_of_date is None:
             as_of_date = pd.Timestamp.today().strftime("%Y-%m-%d")
 
