@@ -1,14 +1,3 @@
-"""
-AdvisorIQ — IV-Adjusted Portfolio Optimisation Layer
-
-Standard mean-variance optimisation with a twist:
-    - Replace diagonal (each asset variance) with IV-implied variance
-    - Keep off-diagonals (correlations) historically estimated
-    - Run in parallel: historical vs IV-adjusted, show the delta
-
-Implements per-client optimisation targeting specific portfolio volatilities.
-"""
-
 import logging
 from typing import Dict, List, Optional, Tuple
 
@@ -22,7 +11,6 @@ logger = logging.getLogger(__name__)
 
 
 def compute_historical_cov(returns: pd.DataFrame, annualise: bool = True) -> pd.DataFrame:
-    """Compute historical covariance matrix from daily log returns."""
     cov = returns.cov()
     if annualise:
         cov = cov * TRADING_DAYS_PER_YEAR
@@ -33,15 +21,7 @@ def compute_iv_adjusted_cov(
     hist_cov: pd.DataFrame,
     iv_implied_variances: Dict[str, float],
 ) -> pd.DataFrame:
-    """
-    Replace diagonal of covariance matrix with IV-implied variances.
-    Off-diagonals (correlations) remain historically estimated.
 
-    Parameters
-    ----------
-    hist_cov             : historical annualised covariance matrix
-    iv_implied_variances : dict ticker -> (ATM_IV)^2
-    """
     tickers = hist_cov.columns.tolist()
     adjusted = hist_cov.copy()
 
@@ -78,15 +58,7 @@ def optimize_portfolio(
     min_weight: float = 0.0,
     risk_free_rate: float = 0.04,
 ) -> Dict[str, float]:
-    """
-    Mean-variance optimisation.
 
-    If target_vol is specified, finds the portfolio on the efficient frontier
-    closest to that volatility. Otherwise, maximises Sharpe ratio.
-
-    Uses simple analytical approach (no external optimiser dependency).
-    Falls back to equal-weight if numerical issues arise.
-    """
     tickers = list(cov_matrix.columns)
     n = len(tickers)
 
@@ -139,7 +111,7 @@ def compute_portfolio_stats(
     cov_matrix: pd.DataFrame,
     risk_free_rate: float = 0.04,
 ) -> dict:
-    """Compute portfolio return, vol, Sharpe."""
+
     tickers = list(cov_matrix.columns)
     w = np.array([weights.get(t, 0) for t in tickers])
     mu = expected_ret.reindex(tickers).fillna(0).values
@@ -160,7 +132,7 @@ def stress_test_portfolio(
     weights: Dict[str, float],
     scenario_name: str,
 ) -> float:
-    """Apply a stress scenario to a portfolio. Returns expected loss."""
+
     scenario = STRESS_SCENARIOS.get(scenario_name, {})
     loss = sum(weights.get(t, 0) * scenario.get(t, 0) for t in weights)
     return round(loss, 4)
@@ -174,18 +146,12 @@ def vix_doubling_scenario(
     target_vol: float = None,
     max_weight: float = 0.25,
 ) -> Dict[str, float]:
-    """
-    Dynamic VIX-doubling scenario: double all IVs, rebuild cov, reoptimise.
-    Returns the new optimal weights.
-    """
+
     doubled_iv_vars = {t: (iv * 2) ** 2 for t, iv in current_ivs.items() if iv is not None}
     doubled_cov = compute_iv_adjusted_cov(hist_cov, doubled_iv_vars)
     return optimize_portfolio(expected_ret, doubled_cov, target_vol=target_vol, max_weight=max_weight)
 
-
-# ─────────────────────────────────────────────────────────────────────
 # Per-Client Optimisation
-# ─────────────────────────────────────────────────────────────────────
 
 def optimise_for_client(
     client: ClientProfile,
@@ -194,12 +160,7 @@ def optimise_for_client(
     iv_adjusted_cov: pd.DataFrame,
     current_ivs: Dict[str, float],
 ) -> dict:
-    """
-    Run full optimisation pipeline for a single client.
 
-    Returns dict with: historical_weights, iv_adjusted_weights, deltas,
-    portfolio stats for both, stress tests, drift from current.
-    """
     # Historical optimisation
     hist_weights = optimize_portfolio(
         expected_ret, hist_cov,
@@ -273,7 +234,7 @@ def optimise_all_clients(
     iv_adjusted_cov: pd.DataFrame,
     current_ivs: Dict[str, float],
 ) -> Dict[str, dict]:
-    """Run optimisation for all 5 clients."""
+
     results = {}
     for client_id, client in CLIENTS.items():
         logger.info("Optimising for %s (%s)", client.name, client.risk_profile)
