@@ -1,11 +1,3 @@
-"""
-AdvisorIQ — Data Pipeline
-Institutional quant preprocessing (all 8 steps from the system guide).
-
-Steps 1-4: Missing values, timestamp alignment, log returns, annualisation
-Steps 7-8: Temporal integrity, caching
-"""
-
 import os
 import hashlib
 import logging
@@ -22,17 +14,12 @@ from config.settings import (
 
 logger = logging.getLogger(__name__)
 
-# ─────────────────────────────────────────────────────────────────────
 # Step 1: Missing Values — forward-fill only
-# ─────────────────────────────────────────────────────────────────────
 
 def forward_fill_prices(raw_data: pd.DataFrame) -> pd.DataFrame:
     return raw_data.ffill()
 
-
-# ─────────────────────────────────────────────────────────────────────
 # Step 2: Aligning Timestamps — strict inner join
-# ─────────────────────────────────────────────────────────────────────
 
 def align_prices_to_common_dates(prices_df: pd.DataFrame) -> pd.DataFrame:
     data = prices_df.dropna(how="any")
@@ -40,26 +27,17 @@ def align_prices_to_common_dates(prices_df: pd.DataFrame) -> pd.DataFrame:
     data = data[~data.index.duplicated(keep="first")]
     return data
 
-
-# ─────────────────────────────────────────────────────────────────────
 # Step 3: Log returns
-# ─────────────────────────────────────────────────────────────────────
 
 def compute_log_returns(prices: pd.DataFrame) -> pd.DataFrame:
     return np.log(prices / prices.shift(1)).dropna()
 
-
-# ─────────────────────────────────────────────────────────────────────
 # Step 4: Annualising
-# ─────────────────────────────────────────────────────────────────────
 
 def annualise_volatility(daily_vol):
     return daily_vol * np.sqrt(TRADING_DAYS_PER_YEAR)
 
-
-# ─────────────────────────────────────────────────────────────────────
 # Step 7: Temporal splits
-# ─────────────────────────────────────────────────────────────────────
 
 def temporal_split(data: pd.DataFrame, train_end: str = TRAIN_END, val_end: str = VAL_END):
     train = data[data.index <= train_end]
@@ -67,10 +45,7 @@ def temporal_split(data: pd.DataFrame, train_end: str = TRAIN_END, val_end: str 
     test = data[data.index > val_end]
     return train, val, test
 
-
-# ─────────────────────────────────────────────────────────────────────
 # Step 8: Caching
-# ─────────────────────────────────────────────────────────────────────
 
 def _cache_key(tickers, start, end, prefix=""):
     s = prefix + "_".join(sorted(tickers)) + f"_{start}_{end}".replace("-", "")
@@ -81,10 +56,7 @@ def _cache_path(key, suffix):
     os.makedirs(CACHE_DIR, exist_ok=True)
     return os.path.join(CACHE_DIR, f"{key}_{suffix}.parquet")
 
-
-# ─────────────────────────────────────────────────────────────────────
 # Fetching
-# ─────────────────────────────────────────────────────────────────────
 
 def fetch_prices(tickers: List[str], start: str = DATA_START,
                  end: str = DATA_END) -> pd.DataFrame:
@@ -136,7 +108,6 @@ def fetch_volume(tickers: List[str], start: str = DATA_START,
 
 
 def fetch_macro_prices(start: str = DATA_START, end: str = DATA_END) -> pd.DataFrame:
-    """Fetch macro tickers: ^VIX, ^VIX3M, SPY, HYG, TLT."""
     logger.info("Fetching macro data: %s", MACRO_TICKERS)
     raw = yf.download(MACRO_TICKERS, start=start, end=end, progress=False, auto_adjust=True)
 
@@ -156,16 +127,9 @@ def fetch_macro_prices(start: str = DATA_START, end: str = DATA_END) -> pd.DataF
     logger.info("Macro prices shape: %s, columns: %s", prices.shape, list(prices.columns))
     return prices
 
-
-# ─────────────────────────────────────────────────────────────────────
 # IV Fetching (per-ticker, live snapshot)
-# ─────────────────────────────────────────────────────────────────────
 
 def fetch_current_iv(ticker: str) -> Optional[float]:
-    """
-    Get ATM implied vol from the nearest-to-30d expiry.
-    Returns annualised IV as a decimal, or None on failure.
-    """
     try:
         t = yf.Ticker(ticker)
         S = t.info.get("currentPrice")
@@ -204,7 +168,6 @@ def fetch_current_iv(ticker: str) -> Optional[float]:
         if "impliedVolatility" in atm.index and pd.notna(atm["impliedVolatility"]):
             return float(atm["impliedVolatility"])
 
-        # Fallback: compute from mid price (requires py_vollib)
         return None
 
     except Exception as e:
@@ -213,7 +176,6 @@ def fetch_current_iv(ticker: str) -> Optional[float]:
 
 
 def fetch_all_ivs(tickers: List[str] = None) -> Dict[str, Optional[float]]:
-    """Fetch current IV for all asset tickers."""
     if tickers is None:
         tickers = ASSET_TICKERS
     ivs = {}
@@ -223,10 +185,7 @@ def fetch_all_ivs(tickers: List[str] = None) -> Dict[str, Optional[float]]:
         logger.info("  %s IV: %s", t, f"{iv:.4f}" if iv else "N/A")
     return ivs
 
-
-# ─────────────────────────────────────────────────────────────────────
 # Full Pipeline: fetch → clean → cache
-# ─────────────────────────────────────────────────────────────────────
 
 def get_clean_data(
     tickers: List[str] = None,
@@ -234,11 +193,7 @@ def get_clean_data(
     end: str = DATA_END,
     use_cache: bool = True,
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """
-    Full pipeline: fetch → clean (Steps 1-2) → log returns (Step 3) → cache (Step 8).
 
-    Returns: (prices, returns, volume) — all aligned to common dates.
-    """
     if tickers is None:
         tickers = ASSET_TICKERS
 
@@ -291,7 +246,7 @@ def get_macro_data(
     end: str = DATA_END,
     use_cache: bool = True,
 ) -> pd.DataFrame:
-    """Fetch and cache macro data."""
+
     key = _cache_key(MACRO_TICKERS, start, end, prefix="macro_")
     path = _cache_path(key, "macro")
 
