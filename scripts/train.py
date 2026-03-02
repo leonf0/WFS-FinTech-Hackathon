@@ -1,8 +1,4 @@
 #!/usr/bin/env python3
-"""
-AdvisorIQ — Train all models (Layer A + Layer B).
-Usage: python scripts/train.py [--epochs 200] [--tickers AAPL MSFT ...]
-"""
 import os
 import sys
 import argparse
