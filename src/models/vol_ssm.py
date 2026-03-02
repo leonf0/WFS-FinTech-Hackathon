@@ -1,29 +1,12 @@
-"""
-AdvisorIQ — Layer A: VolSSM (S5-based Volatility Forecaster)
-
-Architecture (unchanged from validated notebook):
-    Linear(P→D) → 3× [Pre-LN residual S5 + GELU + Dropout] → final token → MLP → softplus
-
-Input:  (batch, T=252, P=8)  raw daily features
-Output: (batch,)             predicted 30-day annualised HV (strictly positive)
-"""
-
 import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 
-
-# ─────────────────────────────────────────────────────────────────────
 # HiPPO Initialisation
-# ─────────────────────────────────────────────────────────────────────
 
 def hippo_init(N, H):
-    """
-    Standard S4D/S5 HiPPO Initialization.
-    Returns Lambda (N/2 complex), B (N/2, H complex), C (H, N/2 complex)
-    """
     n = torch.arange(1, N // 2 + 1)
     Lambda = -0.5 + 1j * np.pi * n
 
@@ -32,10 +15,7 @@ def hippo_init(N, H):
 
     return Lambda, B, C
 
-
-# ─────────────────────────────────────────────────────────────────────
 # S5 Layer — Core SSM with Conv/RNN Duality
-# ─────────────────────────────────────────────────────────────────────
 
 class S5Layer(nn.Module):
     def __init__(self, d_model: int, state_size: int, seq_len: int):
@@ -115,21 +95,9 @@ class S5Layer(nn.Module):
     def forward(self, u: torch.Tensor, mode: str = 'conv') -> torch.Tensor:
         return self._conv_forward(u) if mode == 'conv' else self._rnn_forward(u)
 
-
-# ─────────────────────────────────────────────────────────────────────
 # VolSSM — Full Model
-# ─────────────────────────────────────────────────────────────────────
 
 class VolSSM(nn.Module):
-    """
-    Volatility forecasting model using stacked S5 blocks.
-
-    Architecture:
-        Linear(P -> D) -> 3x [Pre-LN residual S5 + GELU + Dropout] -> final token -> MLP -> softplus
-
-    Input: (batch, T=252, P=8) raw daily features
-    Output: (batch,) predicted 30-day annualised HV (strictly positive via softplus)
-    """
 
     def __init__(
         self,
@@ -179,10 +147,7 @@ class VolSSM(nn.Module):
         x = F.softplus(x)
         return x.squeeze(-1)
 
-
-# ─────────────────────────────────────────────────────────────────────
 # Utilities
-# ─────────────────────────────────────────────────────────────────────
 
 def seed_all(seed=42):
     """Set all random seeds for reproducibility."""
