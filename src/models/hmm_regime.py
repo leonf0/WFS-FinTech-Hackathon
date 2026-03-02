@@ -1,13 +1,3 @@
-"""
-AdvisorIQ — Layer B: HMM Regime Classifier
-
-Unsupervised Hidden Markov Model that classifies market regimes.
-States are labelled by sorting on mean VIX: LOW_VOL < NORMAL < STRESS [< CRISIS].
-Supports causal forward-filter (for live/backtest) and non-causal predict_proba.
-
-Unchanged from validated notebook.
-"""
-
 from __future__ import annotations
 
 import json
@@ -27,10 +17,7 @@ from sklearn.preprocessing import StandardScaler
 
 logger = logging.getLogger(__name__)
 
-
-# ─────────────────────────────────────────────────────────────────────
 # Config
-# ─────────────────────────────────────────────────────────────────────
 
 @dataclass
 class HMMConfig:
@@ -70,10 +57,7 @@ class HMMConfig:
             "n_features": self.n_features,
         }
 
-
-# ─────────────────────────────────────────────────────────────────────
 # Validation
-# ─────────────────────────────────────────────────────────────────────
 
 EXPECTED_COLS = (
     "f1_vix", "f2_vix_chg_20d", "f3_slope",
@@ -105,10 +89,7 @@ def validate_features(features, config=None, allow_reorder=True):
     else:
         raise FeatureContractError(f"Expected DataFrame or ndarray, got {type(features)}")
 
-
-# ─────────────────────────────────────────────────────────────────────
 # Forward Filter (causal probabilities)
-# ─────────────────────────────────────────────────────────────────────
 
 def forward_filter(model, X: np.ndarray) -> np.ndarray:
     """P(S_t=k | x_{1:t}) — causal, forward-pass only. Shape [T, K], rows sum to 1."""
@@ -132,10 +113,7 @@ def forward_filter(model, X: np.ndarray) -> np.ndarray:
 
     return filtered
 
-
-# ─────────────────────────────────────────────────────────────────────
 # Internal helpers
-# ─────────────────────────────────────────────────────────────────────
 
 _LABEL_TEMPLATES = {
     2: ["LOW_VOL", "STRESS"],
@@ -175,13 +153,9 @@ def seed_all(seed: int) -> None:
     random.seed(seed)
     np.random.seed(seed)
 
-
-# ─────────────────────────────────────────────────────────────────────
 # HMM Regime Classifier
-# ─────────────────────────────────────────────────────────────────────
 
 class HMMRegimeClassifier:
-    """Full Model B: fit -> predict_regimes -> save/load."""
 
     def __init__(self, config: Optional[HMMConfig] = None):
         self.config = config or HMMConfig()
