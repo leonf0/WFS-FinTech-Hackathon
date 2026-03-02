@@ -1,7 +1,3 @@
-"""
-AdvisorIQ — Central Configuration
-Single source of truth for all parameters. Change here, nowhere else.
-"""
 from dataclasses import dataclass, field
 from typing import Dict, List, Tuple
 import os
@@ -9,9 +5,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# ─────────────────────────────────────────────────────────────────────
-# Universe
-# ─────────────────────────────────────────────────────────────────────
 ASSET_TICKERS: List[str] = [
     "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA",
     "JPM", "BAC", "V",
@@ -21,9 +14,6 @@ ASSET_TICKERS: List[str] = [
 
 MACRO_TICKERS: List[str] = ["^VIX", "^VIX3M", "SPY", "HYG", "TLT"]
 
-# ─────────────────────────────────────────────────────────────────────
-# Date Boundaries (temporal integrity)
-# ─────────────────────────────────────────────────────────────────────
 DATA_START = os.getenv("DATA_START", "2021-01-01")
 DATA_END = os.getenv("DATA_END", "2025-01-01")
 
@@ -36,9 +26,7 @@ HMM_TRAIN_CUTOFF = "2023-01-01"
 
 TRADING_DAYS_PER_YEAR = 252
 
-# ─────────────────────────────────────────────────────────────────────
 # Model A — VolSSM hyperparameters
-# ─────────────────────────────────────────────────────────────────────
 VOLSSM_INPUT_CHANNELS = 8
 VOLSSM_D_MODEL = 128
 VOLSSM_STATE_SIZE = 64
@@ -53,9 +41,8 @@ VOLSSM_EPOCHS = 200
 VOLSSM_BATCH_SIZE = 32
 VOLSSM_GRAD_CLIP = 1.0
 
-# ─────────────────────────────────────────────────────────────────────
 # Model A — Feature schema (8 channels, strict contract)
-# ─────────────────────────────────────────────────────────────────────
+
 VOLSSM_FEATURE_COLS = [
     "ret_1d",        # 1-day log return
     "ret_5d",        # 5-day log return
@@ -69,9 +56,8 @@ VOLSSM_FEATURE_COLS = [
 
 FORWARD_RV_DAYS = 30            # Target: 30-day forward realised vol
 
-# ─────────────────────────────────────────────────────────────────────
 # Model B — HMM hyperparameters
-# ─────────────────────────────────────────────────────────────────────
+
 HMM_N_STATES = 3
 HMM_N_INIT = 20
 HMM_N_ITER = 500
@@ -86,9 +72,8 @@ HMM_FEATURE_COLS = [
     "f6_corr_spy_tlt",
 ]
 
-# ─────────────────────────────────────────────────────────────────────
 # IVR Signal Engine — Regime-dependent thresholds
-# ─────────────────────────────────────────────────────────────────────
+
 IVR_THRESHOLDS: Dict[str, float] = {
     "LOW_VOL": 1.2,
     "NORMAL":  1.5,
@@ -100,9 +85,8 @@ IVR_HIGH_FEAR_MULTIPLIER = 1.3   # HIGH_FEAR = threshold * 1.3
 IV_PERCENTILE_THRESHOLD = 0.80   # Must be above 80th percentile of trailing 252d IV
 IV_TRAILING_WINDOW = 252
 
-# ─────────────────────────────────────────────────────────────────────
 # Stress Test Scenarios (historical drawdowns per asset class)
-# ─────────────────────────────────────────────────────────────────────
+
 STRESS_SCENARIOS: Dict[str, Dict[str, float]] = {
     "2008_GFC": {
         "AAPL": -0.57, "MSFT": -0.44, "GOOGL": -0.56, "AMZN": -0.45, "NVDA": -0.76,
@@ -124,15 +108,13 @@ STRESS_SCENARIOS: Dict[str, Dict[str, float]] = {
     },
 }
 
-# ─────────────────────────────────────────────────────────────────────
 # Paths
-# ─────────────────────────────────────────────────────────────────────
+
 ARTIFACTS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "artifacts")
 MODELS_DIR = os.path.join(ARTIFACTS_DIR, "models")
 CACHE_DIR = os.path.join(ARTIFACTS_DIR, "cache")
 FEATURES_DIR = os.path.join(ARTIFACTS_DIR, "features")
 
-# ─────────────────────────────────────────────────────────────────────
 # API Keys
-# ─────────────────────────────────────────────────────────────────────
+
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
