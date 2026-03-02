@@ -1,10 +1,3 @@
-"""
-AdvisorIQ — Feature Engineering for Layer A (VolSSM)
-
-Produces the 8-channel feature matrix and 30-day forward RV target per ticker.
-Strict contract: [ret_1d, ret_5d, hv_10d, hv_21d, hv_63d, vol_z_63d, vix_level, ivr_lag_5d]
-"""
-
 import logging
 from typing import Dict, List, Optional, Tuple
 
@@ -27,22 +20,6 @@ def build_ticker_features(
     vix: pd.Series,
     atm_iv: Optional[pd.Series] = None,
 ) -> pd.DataFrame:
-    """
-    Build the 8-channel daily feature vector for a single ticker.
-    All features computed "as of" day D using only data up to D.
-
-    Parameters
-    ----------
-    prices  : Adjusted close for the ticker (DatetimeIndex)
-    returns : Daily log returns for the ticker
-    volume  : Daily trading volume
-    vix     : VIX close series (same date index)
-    atm_iv  : Optional ATM 30d IV series; if None, ivr_lag_5d = NaN
-
-    Returns
-    -------
-    DataFrame with columns matching VOLSSM_FEATURE_COLS, indexed by date.
-    """
     idx = returns.index
 
     # 1) Lagged returns
@@ -78,10 +55,6 @@ def build_ticker_features(
 
 
 def compute_forward_rv(returns: pd.Series, horizon: int = FORWARD_RV_DAYS) -> pd.Series:
-    """
-    30-day forward realised vol: annualised std of the next `horizon` daily
-    log-returns. Label for date D uses returns D+1 ... D+horizon.
-    """
     return (
         returns.shift(-1)
         .rolling(horizon)
@@ -96,19 +69,6 @@ def build_training_sequences(
     target: pd.Series,
     seq_len: int = VOLSSM_SEQ_LEN,
 ) -> Tuple[np.ndarray, np.ndarray, List[pd.Timestamp]]:
-    """
-    Build supervised (X, y) pairs for training.
-
-    For each eligible anchor date D:
-        X[i] = features[D-251 : D] → shape (252, 8)
-        y[i] = forward_rv at D     → scalar
-
-    Returns
-    -------
-    X      : (N, 252, 8) float32
-    y      : (N,) float32
-    dates  : list of anchor dates
-    """
     dataset = features.join(target, how="inner").dropna()
     feat_vals = dataset[VOLSSM_FEATURE_COLS].values.astype(np.float32)
     label_vals = dataset["y_hv_fwd_30d"].values.astype(np.float32)
@@ -138,11 +98,6 @@ def build_all_ticker_data(
     vix: pd.Series,
     ivs: Optional[Dict[str, pd.Series]] = None,
 ) -> Dict[str, Tuple[np.ndarray, np.ndarray, List[pd.Timestamp]]]:
-    """
-    Build training data for all tickers.
-
-    Returns dict: ticker -> (X, y, dates)
-    """
     all_data = {}
 
     for ticker in prices.columns:
@@ -173,9 +128,6 @@ def split_by_date(
     train_end: str = TRAIN_END,
     val_end: str = VAL_END,
 ) -> Dict[str, Tuple[np.ndarray, np.ndarray]]:
-    """
-    Temporal split into train/val/test. No leakage.
-    """
     dates_arr = pd.DatetimeIndex(dates)
     train_mask = dates_arr <= train_end
     val_mask = (dates_arr > train_end) & (dates_arr <= val_end)
