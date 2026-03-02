@@ -1,10 +1,3 @@
-"""
-AdvisorIQ — LLM Narrator
-
-Translates structured quant outputs into plain-English client communications.
-The LLM is purely a translator — every number was computed by the quantitative layers.
-"""
-
 import logging
 import json
 from typing import Dict, Optional
@@ -66,10 +59,7 @@ def generate_narrative(
     signal_data: dict,
     api_key: str = None,
 ) -> str:
-    """
-    Generate client-facing narrative using the Anthropic API.
-    Falls back to a template-based narrative if API unavailable.
-    """
+
     if api_key:
         try:
             import anthropic
