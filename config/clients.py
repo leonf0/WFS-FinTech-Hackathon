@@ -1,8 +1,3 @@
-"""
-AdvisorIQ — Client Profile Definitions
-Each client has a risk tolerance (target annual vol), investment goals,
-and a current portfolio allocation. The system optimises per-client.
-"""
 from dataclasses import dataclass, field
 from typing import Dict, List
 
@@ -17,11 +12,6 @@ class ClientProfile:
     current_weights: Dict[str, float]      # current allocation (sums to ~1.0)
     goals: str                             # plain-English investment goals
     constraints: List[str] = field(default_factory=list)
-
-
-# ─────────────────────────────────────────────────────────────────────
-# The Five Clients
-# ─────────────────────────────────────────────────────────────────────
 
 CLIENTS: Dict[str, ClientProfile] = {
 
