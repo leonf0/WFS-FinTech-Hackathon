@@ -1,10 +1,3 @@
-"""
-AdvisorIQ — FastAPI Backend
-
-Serves all model outputs, client optimisations, and LLM narratives to the dashboard UI.
-Loads models once at startup; all subsequent requests are fast inference.
-"""
-
 import logging
 import os
 import sys
@@ -50,9 +43,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ─────────────────────────────────────────────────────────────────────
 # Global State (loaded once at startup)
-# ─────────────────────────────────────────────────────────────────────
 
 STATE = {
     "signal_engine": None,
@@ -66,14 +57,10 @@ STATE = {
     "ready": False,
 }
 
-
-# ─────────────────────────────────────────────────────────────────────
 # Startup: Load models + compute signals
-# ─────────────────────────────────────────────────────────────────────
 
 @app.on_event("startup")
 async def startup_event():
-    """Load models and pre-compute all signals for the demo."""
     logger.info("=" * 60)
     logger.info("AdvisorIQ starting up...")
     logger.info("=" * 60)
@@ -173,10 +160,7 @@ async def startup_event():
         # Allow server to start even if models aren't loaded
         STATE["ready"] = False
 
-
-# ─────────────────────────────────────────────────────────────────────
 # API Endpoints
-# ─────────────────────────────────────────────────────────────────────
 
 @app.get("/api/health")
 def health():
@@ -249,7 +233,6 @@ class ChatRequest(BaseModel):
 
 @app.post("/api/chat")
 def chat(req: ChatRequest):
-    """Chatbot endpoint for follow-up questions."""
     if not STATE["ready"]:
         raise HTTPException(503, "System still loading")
 
@@ -267,10 +250,7 @@ def chat(req: ChatRequest):
     )
     return {"response": response}
 
-
-# ─────────────────────────────────────────────────────────────────────
 # Serve UI
-# ─────────────────────────────────────────────────────────────────────
 
 UI_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "ui")
 
