@@ -1,8 +1,4 @@
 #!/usr/bin/env python3
-"""
-AdvisorIQ — Launch the application server.
-Usage: python scripts/serve.py [--port 8000]
-"""
 import os
 import sys
 import argparse
