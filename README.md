@@ -47,13 +47,3 @@ advisoriq/
 ├── artifacts/                # Generated: model checkpoints, cached data
 └── requirements.txt
 ```
-
-## Key Innovation: IVR Signal
-
-**IVR = Implied Vol / ML-Predicted Vol**
-
-- IVR > 1 → options market prices more risk than our model predicts
-- Regime-dependent thresholds prevent false alerts:
-  - Low Vol regime: IVR > 1.2 triggers alert
-  - Normal regime: IVR > 1.5
-  - Stress regime: IVR > 1.8
