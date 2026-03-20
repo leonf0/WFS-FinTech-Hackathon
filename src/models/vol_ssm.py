@@ -36,7 +36,6 @@ class S5Layer(nn.Module):
         self.log_Delta = nn.Parameter(torch.tensor([-3.0]))
 
     def get_kernel(self, T: int):
-        """Helper for visualization: returns the impulse response of the SSM."""
         with torch.no_grad():
             A_bar, B_bar, _, _ = self._discretize()
             t_idx = torch.arange(T, device=A_bar.device)
