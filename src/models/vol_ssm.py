@@ -47,7 +47,6 @@ class S5Layer(nn.Module):
             return kernel.mean(dim=0)
 
     def _discretize(self):
-        """Bilinear Transform (Tustin's method) for superior stability."""
         Delta = torch.exp(self.log_Delta)
         Lambda = -torch.exp(self.log_Lambda_real.clamp(min=-10, max=10)) + 1j * self.Lambda_imag
 
@@ -130,11 +129,6 @@ class VolSSM(nn.Module):
         )
 
     def forward(self, u: torch.Tensor, mode: str = 'conv') -> torch.Tensor:
-        assert u.ndim == 3, f"Expected 3D input, got {u.ndim}D"
-        assert u.shape[1] <= self.seq_len, f"T={u.shape[1]} > seq_len={self.seq_len}"
-        assert u.shape[2] == self.input_channels, \
-            f"Expected {self.input_channels} channels, got {u.shape[2]}"
-
         x = self.input_proj(u)
 
         for norm, block in zip(self.norms, self.blocks):
@@ -150,7 +144,6 @@ class VolSSM(nn.Module):
 # Utilities
 
 def seed_all(seed=42):
-    """Set all random seeds for reproducibility."""
     torch.manual_seed(seed)
     np.random.seed(seed)
     if torch.cuda.is_available():
@@ -160,7 +153,6 @@ def seed_all(seed=42):
 
 
 def count_params(model):
-    """Count real degrees of freedom (complex params count as 2x)."""
     total = 0
     for p in model.parameters():
         n = p.numel()
@@ -171,7 +163,6 @@ def count_params(model):
 
 
 def make_optimizer(model, ssm_lr=1e-4, other_lr=1e-3, weight_decay=1e-4):
-    """Create Adam optimizer with separate SSM and non-SSM param groups."""
     ssm_param_names = set()
     for i, _ in enumerate(model.blocks):
         for pname in ['log_Lambda_real', 'Lambda_imag', 'B', 'C', 'log_Delta']:
