@@ -1,18 +1,10 @@
-# AdvisorIQ — Options-Informed Portfolio Intelligence
+# AdvisorIQ — Portfolio Intelligence
 
 **Hackathon submission: "Data in Finance"**
 
-AdvisorIQ listens to what sophisticated market participants are whispering in the options market and acts on it before it becomes a scream in the price data.
+## VolSSM
 
-## Architecture
-
-```
-Options Market Fear Signal → ML Layer A (VolSSM: predicted vol)
-                          → ML Layer B (HMM: market regime)
-                          → IVR Signal Engine (fear flags)
-                          → IV-Adjusted Portfolio Optimiser
-                          → Multi-Client Dashboard + LLM Narrator
-```
+## HMM Vol Regime
 
 ## Repository Structure
 
