@@ -17,18 +17,18 @@ advisoriq/
 │   └── clients.py        # 5 client profiles with distinct risk tolerances
 ├── src/
 │   ├── models/
-│   │   ├── vol_ssm.py    # Layer A: S5-based volatility forecaster (unchanged from notebook)
-│   │   └── hmm_regime.py # Layer B: HMM regime classifier (unchanged from notebook)
+│   │   ├── vol_ssm.py    # Layer A: S5-based volatility forecaster 
+│   │   └── hmm_regime.py # Layer B: HMM regime classifier 
 │   ├── data/
-│   │   ├── pipeline.py   # Data ingestion, cleaning, caching (Steps 1-8)
+│   │   ├── pipeline.py   # Data ingestion, cleaning, caching 
 │   │   ├── features_a.py # 8-channel feature engineering for VolSSM
 │   │   └── features_b.py # 6-feature macro engineering for HMM
 │   ├── training/
 │   │   ├── train_vol_ssm.py  # Per-ticker VolSSM training pipeline
 │   │   └── train_hmm.py      # HMM regime classifier training
 │   ├── inference/
-│   │   ├── signal_engine.py  # IVR computation + regime-dependent thresholds
-│   │   └── optimizer.py      # IV-adjusted covariance + portfolio optimisation
+│   │   ├── signal_engine.py  
+│   │   └── optimizer.py      
 │   ├── llm/
 │   │   └── narrator.py       # LLM integration for client explanations + chatbot
 │   └── app/
