@@ -3,10 +3,19 @@
 **Hackathon submission: "Data in Finance"**
 
 ## VolSSM
+<p align="center">
+  <img src="diagrams/volssm_architecture.png" alt="DQN Training Results" width="80%"/>
+</p>
 
 ## HMM Vol Regime
+<p align="center">
+  <img src="diagrams/hmm_architecture.png" alt="DQN Training Results" width="80%"/>
+</p>
 
 ## Data Pipeline
+<p align="center">
+  <img src="diagrams/pipeline_architecture.png" alt="DQN Training Results" width="80%"/>
+</p>
 
 ## Repository Structure
 
